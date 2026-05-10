@@ -19,10 +19,11 @@ namespace GridConverter
 
     class Program
     {
-        // Константы цветов для значений 0, 1 и 2
+        // Константы цветов для значений 0, 1, 2 и 3
         static readonly Color color0 = Color.FromArgb(134, 255, 134); // Светло-зеленый (для 0)
         static readonly Color color1 = Color.FromArgb(255, 94, 94);   // Светло-красный (для 1)
         static readonly Color color2 = Color.FromArgb(134, 134, 255); // Светло-синий (для 2)
+        static readonly Color color3 = Color.FromArgb(255, 255, 100); // Светло-желтый (для 3)
 
         static void Main()
         {
@@ -90,6 +91,8 @@ namespace GridConverter
                             pixelColor = color1;
                         else if (val == 2)
                             pixelColor = color2;
+                        else if (val == 3)
+                            pixelColor = color3;
                         else
                             pixelColor = color0; // По умолчанию рисуем 0
 
@@ -143,6 +146,10 @@ namespace GridConverter
                             else if (c.R == color2.R && c.G == color2.G && c.B == color2.B)
                             {
                                 val = 2;
+                            }
+                            else if (c.R == color3.R && c.G == color3.G && c.B == color3.B)
+                            {
+                                val = 3;
                             }
                             // Для color0 и любых других сторонних цветов оставляем val = 0
 
