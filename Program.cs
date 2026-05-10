@@ -19,13 +19,28 @@ namespace GridConverter
 
     class Program
     {
+        // Константы цветов для значений 0, 1 и 2
+        static readonly Color color0 = Color.FromArgb(134, 255, 134); // Светло-зеленый (для 0)
+        static readonly Color color1 = Color.FromArgb(255, 94, 94);   // Светло-красный (для 1)
+        static readonly Color color2 = Color.FromArgb(134, 134, 255); // Светло-синий (для 2)
+
         static void Main()
         {
+            // ========================================================
+            // НАСТРОЙКИ (МЕНЯЙТЕ ИХ ЗДЕСЬ ПЕРЕД ЗАПУСКОМ/БИЛДОМ)
+            // ========================================================
+
+            // Выберите режим работы:
+            // true  - конвертировать из JSON в PNG
+            // false - конвертировать из PNG обратно в JSON
             bool convertToPng = true;
 
-            string originalJsonFile = "grid.json";
-            string pngFile = "map2.png";
-            string outputJsonFile = "grid_new.json";
+            // Имена файлов
+            string originalJsonFile = "grid.json";      // Исходный JSON (содержит данные или используется как шаблон)
+            string pngFile = "map.png";        // Файл картинки (куда сохраняем или откуда читаем)
+            string outputJsonFile = "grid_new.json";  // Файл для сохранения нового JSON (при convertToPng = false)
+
+            // ========================================================
 
             try
             {
@@ -59,10 +74,6 @@ namespace GridConverter
             if (grid == null || grid.data == null)
                 throw new Exception("Не удалось распарсить JSON.");
 
-            // Цвета
-            Color color0 = Color.FromArgb(134, 255, 134);
-            Color color1 = Color.FromArgb(255, 94, 94);
-
             // ВАЖНО: Размеры картинки меняются местами (X становится Y, Y становится X)
             using (Bitmap bmp = new Bitmap(grid.sizeY, grid.sizeX))
             {
@@ -73,7 +84,13 @@ namespace GridConverter
                         int index = y * grid.sizeX + x;
                         int val = grid.data[index];
 
-                        Color pixelColor = (val == 1) ? color1 : color0;
+                        Color pixelColor;
+                        if (val == 1)
+                            pixelColor = color1;
+                        else if (val == 2)
+                            pixelColor = color2;
+                        else
+                            pixelColor = color0; // По умолчанию рисуем 0
 
                         // Поворот на 90 градусов по часовой + отражение по горизонтали
                         // математически равны простой замене координат (y, x)
@@ -115,10 +132,19 @@ namespace GridConverter
                         {
                             Color c = bmp.GetPixel(imgX, imgY);
 
-                            int distTo0 = Math.Abs(c.R - 134) + Math.Abs(c.G - 255) + Math.Abs(c.B - 134);
-                            int distTo1 = Math.Abs(c.R - 255) + Math.Abs(c.G - 94) + Math.Abs(c.B - 94);
+                            int val = 0;
 
-                            int val = (distTo1 < distTo0) ? 1 : 0;
+                            // Сравниваем строго байт-в-байт RGB
+                            if (c.R == color1.R && c.G == color1.G && c.B == color1.B)
+                            {
+                                val = 1;
+                            }
+                            else if (c.R == color2.R && c.G == color2.G && c.B == color2.B)
+                            {
+                                val = 2;
+                            }
+                            // Для color0 и любых других сторонних цветов (если случайно мазнули кистью) 
+                            // оставляем val = 0
 
                             int index = y * grid.sizeX + x;
                             grid.data[index] = val;
