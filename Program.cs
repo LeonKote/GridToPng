@@ -26,35 +26,36 @@ namespace GridConverter
 
         static void Main()
         {
-            // ========================================================
-            // НАСТРОЙКИ (МЕНЯЙТЕ ИХ ЗДЕСЬ ПЕРЕД ЗАПУСКОМ/БИЛДОМ)
-            // ========================================================
-
-            // Выберите режим работы:
-            // true  - конвертировать из JSON в PNG
-            // false - конвертировать из PNG обратно в JSON
-            bool convertToPng = true;
-
-            // Имена файлов
-            string originalJsonFile = "grid.json";      // Исходный JSON (содержит данные или используется как шаблон)
-            string pngFile = "map.png";        // Файл картинки (куда сохраняем или откуда читаем)
-            string outputJsonFile = "grid_new.json";  // Файл для сохранения нового JSON (при convertToPng = false)
-
-            // ========================================================
+            string jsonFile = "grid.json";
+            string pngFile = "map.png";
+            string outputJsonFile = "grid_new.json";
 
             try
             {
-                if (convertToPng)
+                // Исходный/шаблонный JSON нужен в обоих случаях
+                if (!File.Exists(jsonFile))
                 {
-                    Console.WriteLine($"Читаем {originalJsonFile} и рисуем {pngFile}...");
-                    JsonToPng(originalJsonFile, pngFile);
-                    Console.WriteLine("Успешно конвертировано в PNG!");
+                    Console.WriteLine($"Ошибка: Файл {jsonFile} не найден в папке с программой!");
+                    Console.WriteLine("Нажмите любую клавишу для выхода...");
+                    Console.ReadKey();
+                    return;
+                }
+
+                if (!File.Exists(pngFile))
+                {
+                    // Картинки нет -> конвертируем JSON в PNG
+                    Console.WriteLine($"Файл {pngFile} не найден. Режим: конвертация из JSON в PNG.");
+                    Console.WriteLine($"Читаем {jsonFile}...");
+                    JsonToPng(jsonFile, pngFile);
+                    Console.WriteLine($"Успешно создан файл {pngFile}!");
                 }
                 else
                 {
-                    Console.WriteLine($"Берем структуру из {originalJsonFile}, читаем пиксели из {pngFile}...");
-                    PngToJson(pngFile, originalJsonFile, outputJsonFile);
-                    Console.WriteLine($"Успешно конвертировано в {outputJsonFile}!");
+                    // Картинка есть -> конвертируем PNG в новый JSON
+                    Console.WriteLine($"Файл {pngFile} обнаружен. Режим: конвертация из PNG в JSON.");
+                    Console.WriteLine($"Берем структуру из {jsonFile}, читаем пиксели из {pngFile}...");
+                    PngToJson(pngFile, jsonFile, outputJsonFile);
+                    Console.WriteLine($"Успешно создан файл {outputJsonFile}!");
                 }
             }
             catch (Exception ex)
@@ -74,7 +75,7 @@ namespace GridConverter
             if (grid == null || grid.data == null)
                 throw new Exception("Не удалось распарсить JSON.");
 
-            // ВАЖНО: Размеры картинки меняются местами (X становится Y, Y становится X)
+            // Размеры картинки меняются местами (X становится Y, Y становится X)
             using (Bitmap bmp = new Bitmap(grid.sizeY, grid.sizeX))
             {
                 for (int y = 0; y < grid.sizeY; y++)
@@ -143,8 +144,7 @@ namespace GridConverter
                             {
                                 val = 2;
                             }
-                            // Для color0 и любых других сторонних цветов (если случайно мазнули кистью) 
-                            // оставляем val = 0
+                            // Для color0 и любых других сторонних цветов оставляем val = 0
 
                             int index = y * grid.sizeX + x;
                             grid.data[index] = val;
